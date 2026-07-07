@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>문듯, 새삼, 대단한 하루</h1>
+      <section class="input-area">
+        <input type="text" id="task_input" />
+        <button id="add_button">+</button>
+      </section>
+
+      <section class="task_area">
+        <div class="task_tabs">
+          <div id="under_line"></div>
+          <div>염원</div>
+          <div>수집중</div>
+          <div>끝이 났노라</div>
+        </div>
+        <div id="task_board">
+          <div class="task">꿈꾸기</div>
+          <div>
+            <button>Check</button>
+            <button>Delete</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      crossorigin="anonymous"
+    ></script>
+    <script src="main.js"></script>
+  </body>
+</html>
