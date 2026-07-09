@@ -1,9 +1,8 @@
 // document.getElementById() : HTML 문서에서 id 값이 "task_input"인 요소(input 태그)를 찾아온다.
 // 이렇게 찾아온 요소는 변수에 저장해두고, 나중에 .value 등으로 그 안의 값을 읽거나 쓸 수 있다.
 let task_input = document.getElementById("task_input");
-
+let mode = 'all'
 //유저가 값을 입력한다.
-
 //+버튼을 누르면 할일 추가
 
 // "add_button" id를 가진 버튼 요소를 찾아서 변수에 저장
@@ -13,11 +12,40 @@ let addbutton = document.getElementById("add_button");
 // 이 배열 안에 할일 하나하나가 객체({}) 형태로 담기게 된다.
 let task_list = [];
 
+// "task_tabs" 안에 있는 탭들(전체/진행중/끝남) 중에서 밑줄(#under_line)만 빼고 가져온다.
+let tabs = document.querySelectorAll(".task_tabs > div:not(#under_line)");
+let underLine = document.getElementById("under_line");
+
 // addEventListener("click", 함수이름)
 // : addbutton을 클릭(click)했을 때 addtask라는 함수를 실행하라고 등록하는 코드.
 // 함수 이름 뒤에 ()를 붙이지 않는 이유: ()를 붙이면 "지금 바로 실행"되고,
 // ()를 안 붙이면 "클릭했을 때 실행할 함수"로만 등록(예약)된다.
 addbutton.addEventListener("click", addtask);
+
+// 탭(전체/진행중/끝남)을 하나씩 돌면서 클릭 이벤트를 등록한다.
+tabs.forEach(function (tab) {
+  tab.addEventListener("click", function () {
+    // 클릭한 탭의 id("all" / "ongoing" / "done")를 현재 모드로 저장
+    mode = tab.id;
+    // 밑줄을 클릭한 탭 위치로 슬라이드시킨다.
+    moveUnderLine(tab);
+    // 바뀐 모드에 맞게 화면을 다시 그린다.
+    render();
+  });
+});
+
+// 클릭된 tab 요소의 위치(offsetLeft)와 너비(offsetWidth)를 읽어서
+// #under_line의 left/width에 그대로 적용한다.
+// CSS에 transition이 걸려 있어서 값이 바뀌는 순간 스르륵 슬라이드되는 것처럼 보인다.
+function moveUnderLine(tab) {
+  underLine.style.left = tab.offsetLeft + "px";
+  underLine.style.width = tab.offsetWidth + "px";
+}
+
+// 페이지가 처음 열렸을 때도 현재 mode("all")에 해당하는 탭 위치로 밑줄을 맞춰준다.
+moveUnderLine(document.getElementById(mode));
+
+
 
 // 버튼을 클릭하면 실행되는 함수
 function addtask() {
@@ -42,30 +70,38 @@ function addtask() {
 // task_list 배열에 들어있는 내용을 바탕으로 화면(HTML)을 새로 그려주는 함수
 // 배열의 값이 바뀔 때마다(추가/삭제/완료체크) 이 함수를 다시 호출해서 화면을 최신 상태로 맞춰준다.
 function render() {
+  //1. 내가 선택한 탭(mode)에 따라 보여줄 목록을 고른다.
+  let list = task_list;
+  if (mode === "ongoing") {
+    list = task_list.filter((task) => task.isComplete === false);
+  } else if (mode === "done") {
+    list = task_list.filter((task) => task.isComplete === true);
+  }
+
   // 최종적으로 화면에 넣을 HTML 코드를 문자열로 차곡차곡 쌓아갈 변수
   let resulthtml = "";
 
-  // for문으로 task_list 배열의 처음(0)부터 끝(length-1)까지 하나씩 순서대로 확인한다.
-  for (let i = 0; i < task_list.length; i++) {
-    // 현재 할일(task_list[i])의 isComplete 값이 true라면 = 완료된 할일이라면
-    if (task_list[i].isComplete == true) {
+  // for문으로 list 배열의 처음(0)부터 끝(length-1)까지 하나씩 순서대로 확인한다.
+  for (let i = 0; i < list.length; i++) {
+    // 현재 할일(list[i])의 isComplete 값이 true라면 = 완료된 할일이라면
+    if (list[i].isComplete == true) {
       // 완료된 할일용 HTML 조각을 만든다. (class="task-done" → CSS에서 밑줄 등 완료 스타일 적용)
       // 백틱(`)으로 감싼 문자열 안에서 ${ } 를 쓰면 그 안의 변수 값을 그대로 문자열에 끼워넣을 수 있다. (템플릿 리터럴)
       resulthtml += `<div class="task_item">
-        <div class="task-done">${task_list[i].taskcontent}</div>
+        <div class="task-done">${list[i].taskcontent}</div>
         <div>
-          <button onclick="toogleComplete('${task_list[i].id}')">Check</button>
-          <button onclick="deleteTask('${task_list[i].id}')">Delete</button>
+          <button onclick="toogleComplete('${list[i].id}')">Check</button>
+          <button onclick="deleteTask('${list[i].id}')">Delete</button>
         </div>
       </div>`;
     } else {
       // isComplete가 false라면 = 아직 진행중인 할일이라면
       // 완료 스타일이 없는 일반 class="task"로 HTML 조각을 만든다.
       resulthtml += `<div class="task_item">
-            <div class="task">${task_list[i].taskcontent}</div>
+            <div class="task">${list[i].taskcontent}</div>
             <div>
-            <button onclick="toogleComplete('${task_list[i].id}')">Check</button>
-            <button onclick="deleteTask('${task_list[i].id}')">Delete</button>
+            <button onclick="toogleComplete('${list[i].id}')">Check</button>
+            <button onclick="deleteTask('${list[i].id}')">Delete</button>
             </div>
         </div>`;
     }
@@ -106,6 +142,7 @@ function deleteTask(id) {
   // 삭제된 상태를 화면에 반영
   render();
 }
+
 
 // 할일마다 서로 겹치지 않는 고유한 id를 만들어주는 함수
 function randomIDGenerate() {
